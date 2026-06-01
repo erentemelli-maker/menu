@@ -1,0 +1,49 @@
+@model ProductFormViewModel
+@{
+    ViewData["Title"] = Model.Product.Id.HasValue ? "Ürün Düzenle" : "Yeni Ürün";
+}
+
+<div class="admin-heading mb-4">
+    <span class="eyebrow">KATALOG</span>
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="panel-card form-card">
+    <form asp-action="SaveProduct" method="post">
+        <input asp-for="Product.Id" type="hidden" />
+        <div class="mb-3">
+            <label asp-for="Product.CategoryId" class="form-label">Kategori</label>
+            <select asp-for="Product.CategoryId" class="form-select">
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Product.Name" class="form-label">Ürün Adı</label>
+            <input asp-for="Product.Name" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Product.Description" class="form-label">Açıklama</label>
+            <textarea asp-for="Product.Description" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Product.Price" class="form-label">Fiyat</label>
+            <input asp-for="Product.Price" class="form-control" min="0" step="0.01" />
+        </div>
+        <div class="form-check mb-4">
+            <input asp-for="Product.IsAvailable" class="form-check-input" />
+            <label asp-for="Product.IsAvailable" class="form-check-label">Menüde göster</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-dark" type="submit">Kaydet</button>
+            <a class="btn btn-outline-dark" asp-action="Index">Vazgeç</a>
+        </div>
+    </form>
+</div>

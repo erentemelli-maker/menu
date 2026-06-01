@@ -1,0 +1,94 @@
+@using DijitalMenu.Application
+@model DashboardDto
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+    var maxRevenue = Model.LastSevenDays.Count == 0 ? 0 : Model.LastSevenDays.Max(day => day.Revenue);
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">YÖNETİM PANELİ</span>
+        <h1>Günün özeti</h1>
+        <p>Operasyonu ve satış performansını tek bakışta takip edin.</p>
+    </div>
+    <a class="btn btn-dark" asp-controller="AdminReports" asp-action="Index">Detaylı raporu aç</a>
+</div>
+
+<div class="metric-grid mb-4">
+    <article class="metric-card metric-featured">
+        <span>Bugünkü ciro</span>
+        <strong>@Model.DailyRevenue.ToString("N2") ₺</strong>
+        <small>Teslim edilen siparişler</small>
+    </article>
+    <article class="metric-card">
+        <span>Bugünkü sipariş</span>
+        <strong>@Model.DailyOrderCount</strong>
+        <small>Oluşturulan toplam sipariş</small>
+    </article>
+    <article class="metric-card">
+        <span>Aktif sipariş</span>
+        <strong>@Model.ActiveOrderCount</strong>
+        <small>Operasyondaki işler</small>
+    </article>
+    <article class="metric-card">
+        <span>Servis bekleyen masa</span>
+        <strong>@Model.ServiceWaitingTableCount</strong>
+        <small>Garson aksiyonu gerekiyor</small>
+    </article>
+    <article class="metric-card">
+        <span>Ortalama sepet</span>
+        <strong>@Model.AverageOrderValue.ToString("N2") ₺</strong>
+        <small>Bugünkü tamamlanan siparişler</small>
+    </article>
+</div>
+
+<div class="report-layout">
+    <section class="panel-card">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">SON 7 GÜN</span>
+                <h2>Satış ritmi</h2>
+            </div>
+            <span class="panel-note">Teslim edilen siparişler</span>
+        </div>
+        <div class="chart-bars">
+            @foreach (var day in Model.LastSevenDays)
+            {
+                var percentage = maxRevenue == 0 ? 0 : Math.Max(6, decimal.Round(day.Revenue / maxRevenue * 100));
+                <div class="chart-column">
+                    <span class="chart-value">@day.Revenue.ToString("N0") ₺</span>
+                    <div class="chart-track"><i style="height: @percentage%"></i></div>
+                    <strong>@day.Date.ToString("ddd")</strong>
+                    <small>@day.Date.ToString("dd.MM")</small>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="panel-card">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">BUGÜN</span>
+                <h2>Öne çıkan ürünler</h2>
+            </div>
+        </div>
+        @if (Model.TopProducts.Count == 0)
+        {
+            <div class="soft-empty">Henüz tamamlanan satış bulunmuyor.</div>
+        }
+        else
+        {
+            <div class="rank-list">
+                @for (var index = 0; index < Model.TopProducts.Count; index++)
+                {
+                    var product = Model.TopProducts[index];
+                    <div>
+                        <b>@(index + 1)</b>
+                        <span><strong>@product.ProductName</strong><small>@product.Quantity adet</small></span>
+                        <em>@product.Revenue.ToString("N2") ₺</em>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+</div>

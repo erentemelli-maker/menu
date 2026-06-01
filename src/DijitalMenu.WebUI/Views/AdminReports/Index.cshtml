@@ -1,0 +1,97 @@
+@model SalesReportViewModel
+@{
+    ViewData["Title"] = "Satış Raporları";
+    var maxRevenue = Model.Report.DailySales.Count == 0 ? 0 : Model.Report.DailySales.Max(day => day.Revenue);
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">RAPORLAMA</span>
+        <h1>Satış raporları</h1>
+        <p>Teslim edilen siparişlerin ciro ve ürün performansını inceleyin.</p>
+    </div>
+</div>
+
+<form class="filter-card mb-4" method="get">
+    <label>
+        <span>Başlangıç</span>
+        <input class="form-control" type="date" name="from" value="@Model.Report.From.ToString("yyyy-MM-dd")" />
+    </label>
+    <label>
+        <span>Bitiş</span>
+        <input class="form-control" type="date" name="to" value="@Model.Report.To.ToString("yyyy-MM-dd")" />
+    </label>
+    <button class="btn btn-dark" type="submit">Raporu getir</button>
+</form>
+
+<div class="metric-grid metric-grid-compact mb-4">
+    <article class="metric-card metric-featured">
+        <span>Toplam ciro</span>
+        <strong>@Model.Report.TotalRevenue.ToString("N2") ₺</strong>
+        <small>@Model.Report.From.ToString("dd.MM.yyyy") - @Model.Report.To.ToString("dd.MM.yyyy")</small>
+    </article>
+    <article class="metric-card">
+        <span>Tamamlanan sipariş</span>
+        <strong>@Model.Report.OrderCount</strong>
+        <small>Teslim edilmiş sipariş sayısı</small>
+    </article>
+    <article class="metric-card">
+        <span>Ortalama sepet</span>
+        <strong>@Model.Report.AverageOrderValue.ToString("N2") ₺</strong>
+        <small>Sipariş başına ciro</small>
+    </article>
+</div>
+
+<section class="panel-card mb-4">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">GÜNLÜK DAĞILIM</span>
+            <h2>Ciro görünümü</h2>
+        </div>
+    </div>
+    <div class="chart-bars chart-bars-report">
+        @foreach (var day in Model.Report.DailySales)
+        {
+            var percentage = maxRevenue == 0 ? 0 : Math.Max(6, decimal.Round(day.Revenue / maxRevenue * 100));
+            <div class="chart-column">
+                <span class="chart-value">@day.Revenue.ToString("N0") ₺</span>
+                <div class="chart-track"><i style="height: @percentage%"></i></div>
+                <strong>@day.Date.ToString("dd.MM")</strong>
+                <small>@day.OrderCount sipariş</small>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="panel-card">
+    <div class="panel-heading">
+        <div>
+            <span class="eyebrow">ÜRÜN PERFORMANSI</span>
+            <h2>En çok kazandıran ürünler</h2>
+        </div>
+    </div>
+    @if (Model.Report.ProductSales.Count == 0)
+    {
+        <div class="soft-empty">Seçilen tarih aralığında tamamlanan satış bulunmuyor.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="report-table">
+                <thead>
+                    <tr><th>Ürün</th><th>Adet</th><th>Ciro</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var product in Model.Report.ProductSales)
+                {
+                    <tr>
+                        <td><strong>@product.ProductName</strong></td>
+                        <td>@product.Quantity</td>
+                        <td>@product.Revenue.ToString("N2") ₺</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

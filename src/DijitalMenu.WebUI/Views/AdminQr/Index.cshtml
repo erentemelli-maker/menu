@@ -1,0 +1,24 @@
+@model IReadOnlyList<TableQrViewModel>
+@{
+    ViewData["Title"] = "QR Kodlar";
+}
+
+<div class="admin-heading mb-4">
+    <span class="eyebrow">İŞLETME PANELİ</span>
+    <h1>Masa QR kodları</h1>
+    <p>Masaya özel QR kodlarını indirin, yazdırın ve servise hazır hale getirin.</p>
+</div>
+
+<div class="row g-3">
+    @foreach (var table in Model)
+    {
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="order-card text-center qr-card">
+                <h2 class="h4">Masa @table.TableNumber</h2>
+                <div class="qr-image">@Html.Raw(table.Svg)</div>
+                <a class="small text-break d-block mb-3" href="@table.MenuUrl">@table.MenuUrl</a>
+                <a class="btn btn-dark" asp-action="Download" asp-route-tableNumber="@table.TableNumber">SVG İndir</a>
+            </div>
+        </div>
+    }
+</div>

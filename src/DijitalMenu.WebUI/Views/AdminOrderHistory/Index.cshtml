@@ -1,0 +1,71 @@
+@using DijitalMenu.Domain
+@model OrderHistoryViewModel
+@{
+    ViewData["Title"] = "Sipariş Geçmişi";
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">ARŞİV</span>
+        <h1>Sipariş geçmişi</h1>
+        <p>Geçmiş siparişleri tarih, masa ve durum bilgileriyle filtreleyin.</p>
+    </div>
+    <span class="badge text-bg-dark">@Model.Orders.Count kayıt</span>
+</div>
+
+<form class="filter-card filter-card-wide mb-4" method="get">
+    <label>
+        <span>Başlangıç</span>
+        <input class="form-control" type="date" name="from" value="@Model.From?.ToString("yyyy-MM-dd")" />
+    </label>
+    <label>
+        <span>Bitiş</span>
+        <input class="form-control" type="date" name="to" value="@Model.To?.ToString("yyyy-MM-dd")" />
+    </label>
+    <label>
+        <span>Masa</span>
+        <input class="form-control" type="number" min="1" name="tableNumber" value="@Model.TableNumber" placeholder="Tümü" />
+    </label>
+    <label>
+        <span>Durum</span>
+        <select class="form-select" name="status">
+            <option value="">Tümü</option>
+            @foreach (var status in Enum.GetValues<OrderStatus>())
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status.ToTurkish()</option>
+            }
+        </select>
+    </label>
+    <button class="btn btn-dark" type="submit">Filtrele</button>
+    <a class="btn btn-outline-dark" asp-action="Index">Temizle</a>
+</form>
+
+@if (Model.Orders.Count == 0)
+{
+    <div class="empty-card">Seçilen filtrelere uygun sipariş bulunamadı.</div>
+}
+
+<div class="history-grid">
+    @foreach (var order in Model.Orders)
+    {
+        <article class="history-card">
+            <header>
+                <div>
+                    <span class="eyebrow">SİPARİŞ #@order.Id</span>
+                    <h2>Masa @order.TableNumber</h2>
+                </div>
+                <span class="history-status status-@order.Status.ToString().ToLowerInvariant()">@order.Status.ToTurkish()</span>
+            </header>
+            <div class="history-items">
+                @foreach (var item in order.Items)
+                {
+                    <div><span>@item.Quantity x @item.ProductName</span><strong>@item.LineTotal.ToString("N2") ₺</strong></div>
+                }
+            </div>
+            <footer>
+                <span>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                <strong>@order.Total.ToString("N2") ₺</strong>
+            </footer>
+        </article>
+    }
+</div>

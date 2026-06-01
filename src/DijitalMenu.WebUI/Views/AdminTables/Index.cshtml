@@ -1,0 +1,61 @@
+@model AdminTablesViewModel
+@{
+    ViewData["Title"] = "Masa Yönetimi";
+}
+
+<div class="admin-heading mb-4">
+    <span class="eyebrow">İŞLETME PANELİ</span>
+    <h1>Masa yönetimi</h1>
+    <p>Servis alanınızı düzenleyin ve QR menüye erişebilecek masaları yönetin.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="panel-card">
+            <h2 class="h5">@(Model.Table.Id.HasValue ? "Masayı Düzenle" : "Yeni Masa")</h2>
+            <form asp-action="Save" method="post">
+                <input asp-for="Table.Id" type="hidden" />
+                <div class="mb-3">
+                    <label asp-for="Table.Number" class="form-label">Masa Numarası</label>
+                    <input asp-for="Table.Number" class="form-control" min="1" required />
+                </div>
+                <div class="form-check mb-3">
+                    <input asp-for="Table.IsActive" class="form-check-input" />
+                    <label asp-for="Table.IsActive" class="form-check-label">Aktif</label>
+                </div>
+                <button class="btn btn-dark w-100" type="submit">Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="panel-card">
+            @foreach (var table in Model.Tables)
+            {
+                <div class="catalog-line">
+                    <div>
+                        <strong>Masa @table.Number</strong>
+                        <span class="badge @(table.IsActive ? "text-bg-success" : "text-bg-secondary") ms-2">
+                            @(table.IsActive ? "Aktif" : "Pasif")
+                        </span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-outline-dark" asp-action="Index" asp-route-editId="@table.Id">Düzenle</a>
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" name="id" value="@table.Id" />
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Sil</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

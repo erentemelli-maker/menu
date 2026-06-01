@@ -1,0 +1,66 @@
+@using DijitalMenu.Domain
+@model IReadOnlyList<Order>
+@{
+    ViewData["Title"] = "Mutfak Ekranı";
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">MUTFAK OPERASYONU</span>
+        <h1>Mutfak ekranı</h1>
+        <p>Yeni siparişleri sırayla hazırlayın, hazır olduğunda servis ekibine iletin.</p>
+    </div>
+    <div class="status-bar">
+        <div class="live-indicator" data-live-indicator data-state="waiting">
+            <i></i><span>Bağlantı kuruluyor</span>
+        </div>
+        <span class="badge text-bg-dark">@Model.Count aktif fiş</span>
+    </div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-card">Mutfak kuyruğunda aktif sipariş yok.</div>
+}
+
+<div class="row g-3">
+    @foreach (var order in Model)
+    {
+        var nextLabel = order.Status == OrderStatus.New ? "Hazırlamaya Başla" : "Servise Hazır";
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="kitchen-ticket status-@order.Status.ToString().ToLowerInvariant()">
+                <header>
+                    <div>
+                        <span class="eyebrow">FİŞ #@order.Id</span>
+                        <h2>Masa @order.TableNumber</h2>
+                    </div>
+                    <span class="ticket-time" data-created-at="@order.CreatedAt.ToString("O")">-- dk</span>
+                </header>
+                <div class="ticket-status">@order.Status.ToTurkish()</div>
+                <div class="ticket-items">
+                    @foreach (var item in order.Items)
+                    {
+                        <div><strong>@item.Quantity x</strong><span>@item.ProductName</span></div>
+                    }
+                </div>
+                @if (order.Status != OrderStatus.Ready)
+                {
+                    <form asp-action="Advance" method="post">
+                        <input type="hidden" name="orderId" value="@order.Id" />
+                        <button class="btn btn-dark w-100 py-3" type="submit">@nextLabel</button>
+                    </form>
+                }
+                else
+                {
+                    <div class="ticket-ready">Servis ekibi bekleniyor</div>
+                }
+            </article>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/js/order-center.js" asp-append-version="true"></script>
+    <script src="~/js/kitchen-timer.js" asp-append-version="true"></script>
+}

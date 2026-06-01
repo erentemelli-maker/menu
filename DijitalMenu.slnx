@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DijitalMenu.Application/DijitalMenu.Application.csproj" />
+    <Project Path="src/DijitalMenu.Domain/DijitalMenu.Domain.csproj" />
+    <Project Path="src/DijitalMenu.Persistence/DijitalMenu.Persistence.csproj" />
+    <Project Path="src/DijitalMenu.WebUI/DijitalMenu.WebUI.csproj" />
+  </Folder>
+</Solution>

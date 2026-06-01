@@ -1,0 +1,87 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var isAdmin = controller.StartsWith("Admin", StringComparison.OrdinalIgnoreCase) ||
+                  controller is "Kitchen" or "Waiter";
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16251f" />
+    <title>@ViewData["Title"] - Minoa</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="@(isAdmin ? "admin-shell" : "guest-shell")">
+    @if (isAdmin)
+    {
+        <header class="app-header">
+            <div class="container app-header-inner">
+                <a class="brand" asp-controller="AdminOrders" asp-action="Index">
+                    <span class="brand-mark">M</span>
+                    <span><strong>Minoa</strong><small>Restaurant OS</small></span>
+                </a>
+                <button class="mobile-nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav"
+                        aria-controls="adminNav" aria-expanded="false" aria-label="Menüyü aç">
+                    <span></span><span></span><span></span>
+                </button>
+                <nav class="collapse app-nav" id="adminNav">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="@(controller == "AdminDashboard" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Index">Panel</a>
+                    }
+                    <a class="@(controller == "AdminOrders" ? "active" : "")" asp-controller="AdminOrders" asp-action="Index">Siparişler</a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Mutfak"))
+                    {
+                        <a class="@(controller == "Kitchen" ? "active" : "")" asp-controller="Kitchen" asp-action="Index">Mutfak</a>
+                    }
+                    @if (User.IsInRole("Admin") || User.IsInRole("Garson"))
+                    {
+                        <a class="@(controller == "Waiter" ? "active" : "")" asp-controller="Waiter" asp-action="Index">Garson</a>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="@(controller == "AdminReports" ? "active" : "")" asp-controller="AdminReports" asp-action="Index">Raporlar</a>
+                        <a class="@(controller == "AdminOrderHistory" ? "active" : "")" asp-controller="AdminOrderHistory" asp-action="Index">Geçmiş</a>
+                        <a class="@(controller == "AdminCatalog" ? "active" : "")" asp-controller="AdminCatalog" asp-action="Index">Katalog</a>
+                        <a class="@(controller == "AdminTables" ? "active" : "")" asp-controller="AdminTables" asp-action="Index">Masalar</a>
+                        <a class="@(controller == "AdminQr" ? "active" : "")" asp-controller="AdminQr" asp-action="Index">QR Kodlar</a>
+                    }
+                    <a class="nav-preview" asp-controller="Menu" asp-action="Index" asp-route-tableNumber="5">Menüyü Gör</a>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button class="nav-logout" type="submit">Çıkış</button>
+                    </form>
+                </nav>
+            </div>
+        </header>
+    }
+    else
+    {
+        <header class="guest-header">
+            <div class="container guest-header-inner">
+                <a class="brand" asp-controller="Menu" asp-action="Index" asp-route-tableNumber="5">
+                    <span class="brand-mark">M</span>
+                    <span><strong>Minoa</strong><small>Kitchen & Coffee</small></span>
+                </a>
+                <a class="guest-admin-link" asp-controller="AdminOrders" asp-action="Index">İşletme Paneli</a>
+            </div>
+        </header>
+    }
+
+    <main class="container page-content" role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <span>Minoa</span>
+            <span>QR Menü & Sipariş Sistemi</span>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,53 @@
+@model MenuViewModel
+@{
+    ViewData["Title"] = "Menü";
+}
+
+<div class="hero-card mb-4">
+    <span class="eyebrow">Masa @Model.TableNumber · QR Menü</span>
+    <h1>İyi yemek,<br />iyi hissettirir.</h1>
+    <p class="mb-0">Mutfağımızdan özenle seçilen lezzetleri keşfedin. Siparişiniz birkaç dokunuşla masanıza gelsin.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="section-toolbar">
+    <div>
+        <span class="eyebrow">Bugünün Seçkisi</span>
+        <h2 class="section-title mt-1">Menüyü keşfedin</h2>
+    </div>
+    <a class="btn btn-dark" asp-controller="Cart" asp-action="Index" asp-route-tableNumber="@Model.TableNumber">
+        Sepetim
+    </a>
+</div>
+
+@foreach (var category in Model.Categories)
+{
+    <section class="mb-4">
+        <h3 class="category-title">@category.Name</h3>
+        <div class="row g-3">
+            @foreach (var product in category.Products)
+            {
+                <div class="col-12 col-md-6">
+                    <div class="product-card h-100">
+                        <div>
+                            <h4>@product.Name</h4>
+                            <p>@product.Description</p>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong class="price">@product.Price.ToString("N2") ₺</strong>
+                            <form asp-action="AddToCart" method="post">
+                                <input type="hidden" name="tableNumber" value="@Model.TableNumber" />
+                                <input type="hidden" name="productId" value="@product.Id" />
+                                <button class="btn btn-sm btn-outline-dark" type="submit">+ Sepete Ekle</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}

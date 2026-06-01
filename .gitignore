@@ -1,0 +1,7 @@
+.vs/
+**/bin/
+**/obj/
+*.db
+*.db-shm
+*.db-wal
+.tmp-signalr/

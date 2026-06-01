@@ -1,0 +1,68 @@
+@using DijitalMenu.Domain
+@model WaiterViewModel
+@{
+    ViewData["Title"] = "Garson Paneli";
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">SERVİS OPERASYONU</span>
+        <h1>Garson paneli</h1>
+        <p>Hazır siparişleri masaya ulaştırın ve salon durumunu anlık takip edin.</p>
+    </div>
+    <div class="status-bar">
+        <div class="live-indicator" data-live-indicator data-state="waiting">
+            <i></i><span>Bağlantı kuruluyor</span>
+        </div>
+        <span class="badge text-bg-dark">@Model.ReadyOrders.Count hazır sipariş</span>
+    </div>
+</div>
+
+<section class="mb-4">
+    <h2 class="section-title mb-3">Servise hazır</h2>
+    @if (Model.ReadyOrders.Count == 0)
+    {
+        <div class="empty-card">Şu anda servise hazır sipariş yok.</div>
+    }
+    <div class="row g-3">
+        @foreach (var order in Model.ReadyOrders)
+        {
+            <div class="col-12 col-md-6">
+                <article class="service-card">
+                    <div>
+                        <span class="eyebrow">SİPARİŞ #@order.Id</span>
+                        <h2>Masa @order.TableNumber</h2>
+                    </div>
+                    <div class="ticket-items">
+                        @foreach (var item in order.Items)
+                        {
+                            <div><strong>@item.Quantity x</strong><span>@item.ProductName</span></div>
+                        }
+                    </div>
+                    <form asp-action="Deliver" method="post">
+                        <input type="hidden" name="orderId" value="@order.Id" />
+                        <button class="btn btn-dark w-100 py-3" type="submit">Masaya Teslim Edildi</button>
+                    </form>
+                </article>
+            </div>
+        }
+    </div>
+</section>
+
+<section>
+    <h2 class="section-title mb-3">Salon durumu</h2>
+    <div class="table-grid">
+        @foreach (var table in Model.Tables)
+        {
+            <div class="table-tile status-@table.Status.ToString().ToLowerInvariant()">
+                <strong>Masa @table.Number</strong>
+                <span>@table.Status.ToTurkish()</span>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/js/order-center.js" asp-append-version="true"></script>
+}

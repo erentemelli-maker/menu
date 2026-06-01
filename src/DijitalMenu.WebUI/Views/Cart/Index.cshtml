@@ -1,0 +1,50 @@
+@model CartViewModel
+@{
+    ViewData["Title"] = "Sepet";
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">MASA @Model.TableNumber</span>
+        <h1>Sipariş özeti</h1>
+        <p>Seçimlerinizi kontrol edin, mutfağa iletelim.</p>
+    </div>
+    <a class="btn btn-outline-dark" asp-controller="Menu" asp-action="Index" asp-route-tableNumber="@Model.TableNumber">Menüye Dön</a>
+</div>
+
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (Model.Lines.Count == 0)
+{
+    <div class="empty-card">Sepetiniz henüz boş. Menüden sevdiğiniz lezzetleri ekleyebilirsiniz.</div>
+}
+else
+{
+    <div class="order-card">
+        @foreach (var line in Model.Lines)
+        {
+            <div class="cart-line">
+                <div>
+                    <strong>@line.Quantity x @line.ProductName</strong>
+                    <div class="text-muted">@line.LineTotal.ToString("N2") ₺</div>
+                </div>
+                <form asp-action="Remove" method="post">
+                    <input type="hidden" name="tableNumber" value="@Model.TableNumber" />
+                    <input type="hidden" name="productId" value="@line.ProductId" />
+                    <button class="btn btn-sm btn-link text-danger" type="submit">Kaldır</button>
+                </form>
+            </div>
+        }
+        <div class="cart-total">
+            <span>Toplam</span>
+            <strong>@Model.Total.ToString("N2") ₺</strong>
+        </div>
+        <form asp-action="Checkout" method="post">
+            <input type="hidden" name="tableNumber" value="@Model.TableNumber" />
+            <button class="btn btn-dark w-100 py-3" type="submit">Siparişi Mutfağa İlet</button>
+        </form>
+    </div>
+}

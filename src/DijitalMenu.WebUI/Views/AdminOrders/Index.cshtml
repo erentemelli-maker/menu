@@ -1,0 +1,67 @@
+@using DijitalMenu.Domain
+@model IReadOnlyList<Order>
+@{
+    ViewData["Title"] = "Sipariş Takibi";
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">İŞLETME PANELİ</span>
+        <h1>Sipariş merkezi</h1>
+        <p>Aktif siparişleri yönetin ve servis akışını tek ekrandan takip edin.</p>
+    </div>
+    <div class="status-bar">
+        <div class="live-indicator" data-live-indicator data-state="waiting">
+            <i></i><span>Bağlantı kuruluyor</span>
+        </div>
+        <span class="badge text-bg-dark">@Model.Count sipariş</span>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/js/order-center.js" asp-append-version="true"></script>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="empty-card">Henüz sipariş yok. Menüden ilk siparişi oluşturabilirsiniz.</div>
+}
+
+<div class="row g-3">
+    @foreach (var order in Model)
+    {
+        <div class="col-12 col-lg-6">
+            <div class="order-card h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <span class="eyebrow">Sipariş #@order.Id</span>
+                        <h2>Masa @order.TableNumber</h2>
+                    </div>
+                    <small class="order-meta">@order.CreatedAt.ToString("HH:mm")</small>
+                </div>
+                @foreach (var item in order.Items)
+                {
+                    <div class="d-flex justify-content-between border-bottom py-2">
+                        <span>@item.Quantity x @item.ProductName</span>
+                        <span>@item.LineTotal.ToString("N2") ₺</span>
+                    </div>
+                }
+                <div class="d-flex justify-content-between py-3">
+                    <strong>Toplam</strong>
+                    <strong>@order.Total.ToString("N2") ₺</strong>
+                </div>
+                <form asp-action="UpdateStatus" method="post" class="status-bar">
+                    <input type="hidden" name="orderId" value="@order.Id" />
+                    <select class="form-select" name="status">
+                        @foreach (var status in Enum.GetValues<OrderStatus>())
+                        {
+                            <option value="@status" selected="@(status == order.Status)">@status.ToTurkish()</option>
+                        }
+                    </select>
+                    <button class="btn btn-dark" type="submit">Güncelle</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
