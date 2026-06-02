@@ -8,7 +8,7 @@
     <div>
         <span class="eyebrow">RAPORLAMA</span>
         <h1>Satış raporları</h1>
-        <p>Teslim edilen siparişlerin ciro ve ürün performansını inceleyin.</p>
+        <p>Tahsil edilen ödemelerin ciro ve ürün performansını inceleyin.</p>
     </div>
 </div>
 
@@ -31,14 +31,14 @@
         <small>@Model.Report.From.ToString("dd.MM.yyyy") - @Model.Report.To.ToString("dd.MM.yyyy")</small>
     </article>
     <article class="metric-card">
-        <span>Tamamlanan sipariş</span>
+        <span>Ödeme işlemi</span>
         <strong>@Model.Report.OrderCount</strong>
-        <small>Teslim edilmiş sipariş sayısı</small>
+        <small>Tahsilat hareketi sayısı</small>
     </article>
     <article class="metric-card">
         <span>Ortalama sepet</span>
         <strong>@Model.Report.AverageOrderValue.ToString("N2") ₺</strong>
-        <small>Sipariş başına ciro</small>
+        <small>Ödeme işlemi başına ciro</small>
     </article>
 </div>
 

@@ -1,30 +1,29 @@
 using System.Security.Claims;
+using DijitalMenu.Application;
+using DijitalMenu.Domain;
 using DijitalMenu.WebUI.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using StaffAuthenticationService = DijitalMenu.Application.IAuthenticationService;
+using DijitalMenu.WebUI.Presentation;
+using DijitalMenu.WebUI.Services;
 
 namespace DijitalMenu.WebUI.Controllers;
 
-public sealed class AccountController : Controller
+public sealed class AccountController(
+    StaffAuthenticationService authenticationService,
+    IStaffService staffService) : Controller
 {
-    private static readonly IReadOnlyDictionary<string, DemoUser> Users =
-        new Dictionary<string, DemoUser>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["admin"] = new("admin123", "Admin", "İşletme Yöneticisi"),
-            ["garson"] = new("garson123", "Garson", "Servis Ekibi"),
-            ["mutfak"] = new("mutfak123", "Mutfak", "Mutfak Ekibi")
-        };
-
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            return RedirectToAction("Index", "AdminOrders");
+            return RedirectToRoleHome();
         }
 
-        return View(new LoginViewModel { ReturnUrl = returnUrl });
+        return View(BuildLoginViewModel(returnUrl: returnUrl));
     }
 
     [HttpPost]
@@ -32,17 +31,17 @@ public sealed class AccountController : Controller
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid ||
-            !Users.TryGetValue(model.Username.Trim(), out var user) ||
-            user.Password != model.Password)
+            authenticationService.Authenticate(model.Username, model.Password) is not { } user)
         {
             ModelState.AddModelError(string.Empty, "Kullanıcı adı veya şifre hatalı.");
-            return View(model);
+            return View(BuildLoginViewModel(model));
         }
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Name, model.Username.Trim()),
-            new(ClaimTypes.Role, user.Role),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.Username),
+            new(ClaimTypes.Role, GetClaimRole(user.Role)),
             new("display_name", user.DisplayName)
         };
 
@@ -50,10 +49,11 @@ public sealed class AccountController : Controller
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(identity));
+        HttpContext.Session.SetInt32(SessionBranchContext.SessionKey, user.BranchId);
 
         return Url.IsLocalUrl(model.ReturnUrl)
             ? LocalRedirect(model.ReturnUrl)
-            : RedirectToAction("Index", "AdminOrders");
+            : RedirectToRoleHome(user.Role);
     }
 
     [HttpPost]
@@ -66,5 +66,38 @@ public sealed class AccountController : Controller
 
     public IActionResult AccessDenied() => View();
 
-    private sealed record DemoUser(string Password, string Role, string DisplayName);
+    private IActionResult RedirectToRoleHome() =>
+        User.IsInRole("Admin") ? RedirectToAction("Index", "AdminDashboard") :
+        User.IsInRole("Garson") ? RedirectToAction("Index", "Waiter") :
+        RedirectToAction("Index", "Kitchen");
+
+    private IActionResult RedirectToRoleHome(StaffRole role) => role switch
+    {
+        StaffRole.Admin => RedirectToAction("Index", "AdminDashboard"),
+        StaffRole.Waiter => RedirectToAction("Index", "Waiter"),
+        StaffRole.Kitchen => RedirectToAction("Index", "Kitchen"),
+        _ => throw new InvalidOperationException("Tanımsız personel rolü.")
+    };
+
+    private static string GetClaimRole(StaffRole role) => role switch
+    {
+        StaffRole.Admin => "Admin",
+        StaffRole.Waiter => "Garson",
+        StaffRole.Kitchen => "Mutfak",
+        _ => throw new InvalidOperationException("Tanımsız personel rolü.")
+    };
+
+    private LoginViewModel BuildLoginViewModel(LoginViewModel? model = null, string? returnUrl = null)
+    {
+        model ??= new LoginViewModel { ReturnUrl = returnUrl };
+        model.StaffOptions = staffService.GetUsers()
+            .Where(user => user.IsActive)
+            .OrderBy(user => user.DisplayName)
+            .Select(user => new LoginStaffOptionViewModel(
+                user.Username,
+                user.DisplayName,
+                user.Role.ToTurkish()))
+            .ToList();
+        return model;
+    }
 }

@@ -8,7 +8,7 @@ using QRCoder;
 namespace DijitalMenu.WebUI.Controllers;
 
 [Authorize(Roles = "Admin")]
-public sealed class AdminQrController(IAdminService adminService) : Controller
+public sealed class AdminQrController(IAdminService adminService, IBranchContext branchContext) : Controller
 {
     public IActionResult Index()
     {
@@ -16,7 +16,7 @@ public sealed class AdminQrController(IAdminService adminService) : Controller
             .Where(table => table.IsActive)
             .Select(table =>
             {
-                var menuUrl = Url.Action("Index", "Menu", new { tableNumber = table.Number }, Request.Scheme)
+                var menuUrl = Url.Action("Index", "Menu", new { branchId = branchContext.BranchId, tableNumber = table.Number }, Request.Scheme)
                     ?? string.Empty;
 
                 using var qrData = QRCodeGenerator.GenerateQrCode(menuUrl, QRCodeGenerator.ECCLevel.Q);
@@ -36,7 +36,7 @@ public sealed class AdminQrController(IAdminService adminService) : Controller
             return NotFound();
         }
 
-        var menuUrl = Url.Action("Index", "Menu", new { tableNumber }, Request.Scheme) ?? string.Empty;
+        var menuUrl = Url.Action("Index", "Menu", new { branchId = branchContext.BranchId, tableNumber }, Request.Scheme) ?? string.Empty;
         using var qrData = QRCodeGenerator.GenerateQrCode(menuUrl, QRCodeGenerator.ECCLevel.Q);
         var svg = new SvgQRCode(qrData).GetGraphic(8);
         return File(Encoding.UTF8.GetBytes(svg), "image/svg+xml", $"masa-{tableNumber}-qr.svg");

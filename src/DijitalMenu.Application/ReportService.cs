@@ -37,21 +37,24 @@ public sealed class ReportService(IRestaurantRepository repository) : IReportSer
         var dayStart = today.Date;
         var dayEnd = dayStart.AddDays(1);
         var orders = repository.GetOrders();
+        var dailyPayments = repository.GetPayments()
+            .Where(payment => payment.PaidAt >= dayStart && payment.PaidAt < dayEnd)
+            .ToList();
         var dailyOrders = orders
             .Where(order => order.CreatedAt >= dayStart && order.CreatedAt < dayEnd)
             .ToList();
         var completedDailyOrders = dailyOrders
-            .Where(order => order.Status == OrderStatus.Delivered)
+            .Where(order => order.Status == OrderStatus.Delivered && order.IsPaid)
             .ToList();
 
         return new DashboardDto(
-            completedDailyOrders.Sum(order => order.Total),
+            dailyPayments.Sum(payment => payment.Amount),
             dailyOrders.Count,
             orders.Count(order => order.Status != OrderStatus.Delivered),
             repository.GetTables().Count(table => table.Status == TableStatus.ServiceWaiting),
-            AverageTotal(completedDailyOrders),
+            AveragePayment(dailyPayments),
             GetProductSales(completedDailyOrders).Take(5).ToList(),
-            GetDailySales(orders, dayStart.AddDays(-6), dayStart));
+            GetDailyPaymentSales(repository.GetPayments(), dayStart.AddDays(-6), dayStart));
     }
 
     public SalesReportDto GetSalesReport(DateTime from, DateTime to)
@@ -65,17 +68,21 @@ public sealed class ReportService(IRestaurantRepository repository) : IReportSer
 
         var completedOrders = repository.GetOrders()
             .Where(order => order.Status == OrderStatus.Delivered &&
+                            order.IsPaid &&
                             order.CreatedAt >= start &&
                             order.CreatedAt < end.AddDays(1))
+            .ToList();
+        var payments = repository.GetPayments()
+            .Where(payment => payment.PaidAt >= start && payment.PaidAt < end.AddDays(1))
             .ToList();
 
         return new SalesReportDto(
             start,
             end,
-            completedOrders.Sum(order => order.Total),
-            completedOrders.Count,
-            AverageTotal(completedOrders),
-            GetDailySales(completedOrders, start, end),
+            payments.Sum(payment => payment.Amount),
+            payments.Count,
+            AveragePayment(payments),
+            GetDailyPaymentSales(payments, start, end),
             GetProductSales(completedOrders));
     }
 
@@ -114,6 +121,9 @@ public sealed class ReportService(IRestaurantRepository repository) : IReportSer
     private static decimal AverageTotal(IReadOnlyCollection<Order> orders) =>
         orders.Count == 0 ? 0 : orders.Average(order => order.Total);
 
+    private static decimal AveragePayment(IReadOnlyCollection<Payment> payments) =>
+        payments.Count == 0 ? 0 : payments.Average(payment => payment.Amount);
+
     private static IReadOnlyList<ProductSalesDto> GetProductSales(IEnumerable<Order> orders) =>
         orders
             .SelectMany(order => order.Items)
@@ -133,7 +143,7 @@ public sealed class ReportService(IRestaurantRepository repository) : IReportSer
         DateTime to)
     {
         var completedByDay = orders
-            .Where(order => order.Status == OrderStatus.Delivered)
+            .Where(order => order.Status == OrderStatus.Delivered && order.IsPaid)
             .GroupBy(order => order.CreatedAt.Date)
             .ToDictionary(
                 group => group.Key,
@@ -142,6 +152,23 @@ public sealed class ReportService(IRestaurantRepository repository) : IReportSer
         return Enumerable.Range(0, (to.Date - from.Date).Days + 1)
             .Select(offset => from.Date.AddDays(offset))
             .Select(date => completedByDay.GetValueOrDefault(date) ?? new DailySalesDto(date, 0, 0))
+            .ToList();
+    }
+
+    private static IReadOnlyList<DailySalesDto> GetDailyPaymentSales(
+        IEnumerable<Payment> payments,
+        DateTime from,
+        DateTime to)
+    {
+        var byDay = payments
+            .GroupBy(payment => payment.PaidAt.Date)
+            .ToDictionary(
+                group => group.Key,
+                group => new DailySalesDto(group.Key, group.Count(), group.Sum(payment => payment.Amount)));
+
+        return Enumerable.Range(0, (to.Date - from.Date).Days + 1)
+            .Select(offset => from.Date.AddDays(offset))
+            .Select(date => byDay.GetValueOrDefault(date) ?? new DailySalesDto(date, 0, 0))
             .ToList();
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace DijitalMenu.WebUI.Controllers;
 
-[Authorize(Roles = "Admin,Mutfak")]
+[Authorize(Roles = "Mutfak")]
 public sealed class KitchenController(IOperationService operationService, IHubContext<OrderHub> hubContext) : Controller
 {
     public IActionResult Index() => View(operationService.GetKitchenOrders());

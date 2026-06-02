@@ -12,4 +12,8 @@ public sealed class LoginViewModel
     public string Password { get; set; } = string.Empty;
 
     public string? ReturnUrl { get; set; }
+
+    public IReadOnlyList<LoginStaffOptionViewModel> StaffOptions { get; set; } = [];
 }
+
+public sealed record LoginStaffOptionViewModel(string Username, string DisplayName, string Role);

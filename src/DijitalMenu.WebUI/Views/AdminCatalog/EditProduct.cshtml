@@ -34,6 +34,10 @@
             <textarea asp-for="Product.Description" class="form-control" rows="3"></textarea>
         </div>
         <div class="mb-3">
+            <label asp-for="Product.ImageUrl" class="form-label">Görsel adresi</label>
+            <input asp-for="Product.ImageUrl" class="form-control" type="url" placeholder="https://..." />
+        </div>
+        <div class="mb-3">
             <label asp-for="Product.Price" class="form-label">Fiyat</label>
             <input asp-for="Product.Price" class="form-control" min="0" step="0.01" />
         </div>

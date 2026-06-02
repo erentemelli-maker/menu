@@ -41,6 +41,14 @@
                     @foreach (var item in order.Items)
                     {
                         <div><strong>@item.Quantity x</strong><span>@item.ProductName</span></div>
+                        @if (!string.IsNullOrWhiteSpace(item.ExtrasSummary))
+                        {
+                            <small class="ticket-note">+ @item.ExtrasSummary</small>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Note))
+                        {
+                            <small class="ticket-note">Not: @item.Note</small>
+                        }
                     }
                 </div>
                 @if (order.Status != OrderStatus.Ready)

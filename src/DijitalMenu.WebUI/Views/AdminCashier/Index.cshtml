@@ -1,0 +1,120 @@
+@model CashierViewModel
+@{
+    ViewData["Title"] = "Kasa";
+}
+
+<div class="admin-heading mb-4">
+    <div>
+        <span class="eyebrow">YÖNETİCİ PANELİ</span>
+        <h1>Kasa ve masa kapatma</h1>
+        <p>Teslim edilen siparişlerin ödemesini alın ve masa hesaplarını kapatın.</p>
+    </div>
+    <span class="badge text-bg-dark">@Model.OpenAccounts.Count açık hesap</span>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<section class="mb-4">
+    @if (Model.OpenAccounts.Count == 0)
+    {
+        <div class="empty-card">Ödeme bekleyen masa hesabı yok.</div>
+    }
+    <div class="row g-3">
+        @foreach (var account in Model.OpenAccounts)
+        {
+            <div class="col-12 col-md-6 col-xl-4">
+                <article class="payment-card">
+                    <header>
+                        <div>
+                            <span class="eyebrow">ÖDEME BEKLİYOR</span>
+                            <h2>Masa @account.TableNumber</h2>
+                        </div>
+                        <strong>@account.RemainingTotal.ToString("N2") ₺</strong>
+                    </header>
+                    <div class="payment-summary">
+                        <span>Toplam <strong>@account.Total.ToString("N2") ₺</strong></span>
+                        <span>Ödenen <strong>@account.PaidTotal.ToString("N2") ₺</strong></span>
+                        <span>Kalan <strong>@account.RemainingTotal.ToString("N2") ₺</strong></span>
+                    </div>
+                    <div class="payment-orders">
+                        @foreach (var order in account.Orders)
+                        {
+                            <div><span>Sipariş #@order.Id</span><strong>@order.Total.ToString("N2") ₺</strong></div>
+                        }
+                    </div>
+                    <div class="payment-section">
+                        <strong>Hızlı tahsilat</strong>
+                        <div class="payment-actions">
+                            <form asp-action="CollectPayment" method="post">
+                                <input type="hidden" name="tableNumber" value="@account.TableNumber" />
+                                <input type="hidden" name="method" value="Cash" />
+                                <input type="hidden" name="remainingTotal" value="@account.RemainingTotal.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                <button class="btn btn-outline-dark w-100" type="submit">Kalanı Nakit Al</button>
+                            </form>
+                            <form asp-action="CollectPayment" method="post">
+                                <input type="hidden" name="tableNumber" value="@account.TableNumber" />
+                                <input type="hidden" name="method" value="Card" />
+                                <input type="hidden" name="remainingTotal" value="@account.RemainingTotal.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                <button class="btn btn-dark w-100" type="submit">Kalanı Kart Al</button>
+                            </form>
+                        </div>
+                    </div>
+                    <form class="payment-section" asp-action="CollectPayment" method="post">
+                        <strong>Parça tutar tahsil et</strong>
+                        <div class="payment-custom">
+                            <input type="hidden" name="tableNumber" value="@account.TableNumber" />
+                            <input class="form-control" name="amount" type="number" min="0.01" max="@account.RemainingTotal.ToString(System.Globalization.CultureInfo.InvariantCulture)" step="0.01" placeholder="Örn. 100, 200, 500" required />
+                            <select class="form-select" name="method">
+                                <option value="Cash">Nakit</option>
+                                <option value="Card">Kart</option>
+                            </select>
+                            <button class="btn btn-dark" type="submit">Tahsil Et</button>
+                        </div>
+                    </form>
+                    <form class="payment-section" asp-action="CollectPayment" method="post">
+                        <strong>Ürün seçerek tahsil et</strong>
+                        <input type="hidden" name="tableNumber" value="@account.TableNumber" />
+                        <div class="payment-products">
+                            @foreach (var line in account.Lines)
+                            {
+                                <label>
+                                    <span>@line.ProductName <small>@line.UnitPrice.ToString("N2") ₺ · en fazla @line.Quantity adet</small></span>
+                                    <input type="hidden" name="productId" value="@line.ProductId" />
+                                    <input type="hidden" name="unitPrice" value="@line.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                    <input class="form-control" type="number" name="quantity" min="0" max="@line.Quantity" value="0" />
+                                </label>
+                            }
+                        </div>
+                        <div class="payment-custom mt-2">
+                            <select class="form-select" name="method">
+                                <option value="Cash">Nakit</option>
+                                <option value="Card">Kart</option>
+                            </select>
+                            <button class="btn btn-outline-dark" type="submit">Seçili Ürünleri Tahsil Et</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        }
+    </div>
+</section>
+
+<section>
+    <h2 class="section-title mb-3">Salon durumu</h2>
+    <div class="table-grid">
+        @foreach (var table in Model.Tables)
+        {
+            <div class="table-tile status-@table.Status.ToString().ToLowerInvariant()">
+                <strong>Masa @table.Number</strong>
+                <span>@table.Status.ToTurkish()</span>
+            </div>
+        }
+    </div>
+</section>

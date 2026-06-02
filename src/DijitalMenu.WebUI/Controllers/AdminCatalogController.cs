@@ -70,6 +70,7 @@ public sealed class AdminCatalogController(IAdminService adminService) : Control
                 CategoryId = product?.CategoryId ?? adminService.GetCategories().FirstOrDefault()?.Id ?? 0,
                 Name = product?.Name ?? string.Empty,
                 Description = product?.Description ?? string.Empty,
+                ImageUrl = product?.ImageUrl ?? string.Empty,
                 Price = product?.Price ?? 0,
                 IsAvailable = product?.IsAvailable ?? true
             }));
@@ -86,6 +87,7 @@ public sealed class AdminCatalogController(IAdminService adminService) : Control
                 input.CategoryId,
                 input.Name,
                 input.Description,
+                input.ImageUrl,
                 input.Price,
                 input.IsAvailable);
 

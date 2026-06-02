@@ -18,7 +18,7 @@
     <article class="metric-card metric-featured">
         <span>Bugünkü ciro</span>
         <strong>@Model.DailyRevenue.ToString("N2") ₺</strong>
-        <small>Teslim edilen siparişler</small>
+        <small>Tahsil edilen ödemeler</small>
     </article>
     <article class="metric-card">
         <span>Bugünkü sipariş</span>
@@ -38,7 +38,7 @@
     <article class="metric-card">
         <span>Ortalama sepet</span>
         <strong>@Model.AverageOrderValue.ToString("N2") ₺</strong>
-        <small>Bugünkü tamamlanan siparişler</small>
+        <small>Bugünkü ödeme işlemleri</small>
     </article>
 </div>
 
@@ -49,7 +49,7 @@
                 <span class="eyebrow">SON 7 GÜN</span>
                 <h2>Satış ritmi</h2>
             </div>
-            <span class="panel-note">Teslim edilen siparişler</span>
+            <span class="panel-note">Tahsil edilen ödemeler</span>
         </div>
         <div class="chart-bars">
             @foreach (var day in Model.LastSevenDays)

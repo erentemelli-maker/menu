@@ -13,8 +13,14 @@
             <input asp-for="ReturnUrl" type="hidden" />
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
             <div class="mb-3">
-                <label asp-for="Username" class="form-label">Kullanıcı adı</label>
-                <input asp-for="Username" class="form-control" autocomplete="username" />
+                <label asp-for="Username" class="form-label">Personel</label>
+                <select asp-for="Username" class="form-select" autocomplete="username" required>
+                    <option value="">Personel seçin</option>
+                    @foreach (var staff in Model.StaffOptions)
+                    {
+                        <option value="@staff.Username">@staff.DisplayName · @staff.Role</option>
+                    }
+                </select>
             </div>
             <div class="mb-4">
                 <label asp-for="Password" class="form-label">Şifre</label>
@@ -23,11 +29,5 @@
             <button class="btn btn-dark w-100 py-3" type="submit">Panele Giriş Yap</button>
         </form>
 
-        <div class="demo-users">
-            <strong>Demo hesapları</strong>
-            <span><code>admin / admin123</code></span>
-            <span><code>garson / garson123</code></span>
-            <span><code>mutfak / mutfak123</code></span>
-        </div>
     </section>
 </div>

@@ -20,6 +20,8 @@
   };
 
   connection.on("OrderCreated", refreshOrders);
+  connection.on("TableServiceRequested", refreshOrders);
+  connection.on("TableServiceResolved", refreshOrders);
   connection.on("OrderStatusChanged", refreshOrders);
   connection.onreconnecting(() => updateIndicator("waiting", "Bağlantı yenileniyor"));
   connection.onreconnected(() => updateIndicator("online", "Canlı bağlantı"));

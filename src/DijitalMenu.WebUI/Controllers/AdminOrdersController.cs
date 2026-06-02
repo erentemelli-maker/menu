@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DijitalMenu.WebUI.Controllers;
 
-[Authorize(Roles = "Admin,Garson,Mutfak")]
+[Authorize(Roles = "Admin")]
 public sealed class AdminOrdersController(IOrderService orderService, IHubContext<OrderHub> hubContext) : Controller
 {
     public IActionResult Index() => View(orderService.GetOrders());

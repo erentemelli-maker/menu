@@ -1,5 +1,6 @@
 using DijitalMenu.Application;
 using DijitalMenu.Persistence;
+using DijitalMenu.WebUI.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -33,6 +34,12 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IOperationService, OperationService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddSingleton<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IBranchService, BranchService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IBranchContext, SessionBranchContext>();
 
 var app = builder.Build();
 app.Services.InitializePersistence();

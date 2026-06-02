@@ -8,19 +8,19 @@ public sealed class MenuController(IMenuService menuService) : Controller
 {
     private const string CartKey = "cart";
 
-    public IActionResult Index(int tableNumber = 5)
+    public IActionResult Index(int branchId = 1, int tableNumber = 5)
     {
         if (menuService.GetTable(tableNumber) is not { IsActive: true })
         {
             return NotFound("Masa bulunamadi.");
         }
 
-        return View(new MenuViewModel(tableNumber, menuService.GetMenu()));
+        return View(new MenuViewModel(branchId, tableNumber, menuService.GetMenu()));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult AddToCart(int tableNumber, int productId)
+    public IActionResult AddToCart(int branchId, int tableNumber, int productId)
     {
         if (menuService.GetTable(tableNumber) is not { IsActive: true } ||
             menuService.GetProduct(productId) is null)
@@ -28,7 +28,7 @@ public sealed class MenuController(IMenuService menuService) : Controller
             return NotFound();
         }
 
-        var cart = HttpContext.Session.GetJson<List<CartItemSession>>(CartKey) ?? [];
+        var cart = HttpContext.Session.GetJson<List<CartItemSession>>(GetCartKey(branchId, tableNumber)) ?? [];
         var existing = cart.FindIndex(item => item.ProductId == productId);
 
         if (existing >= 0)
@@ -40,8 +40,10 @@ public sealed class MenuController(IMenuService menuService) : Controller
             cart.Add(new CartItemSession(productId, 1));
         }
 
-        HttpContext.Session.SetJson(CartKey, cart);
+        HttpContext.Session.SetJson(GetCartKey(branchId, tableNumber), cart);
         TempData["Message"] = "Urun sepete eklendi.";
-        return RedirectToAction(nameof(Index), new { tableNumber });
+        return RedirectToAction(nameof(Index), new { branchId, tableNumber });
     }
+
+    private static string GetCartKey(int branchId, int tableNumber) => $"{CartKey}:{branchId}:{tableNumber}";
 }

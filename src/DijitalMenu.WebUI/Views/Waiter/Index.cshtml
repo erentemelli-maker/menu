@@ -18,6 +18,41 @@
     </div>
 </div>
 
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<section class="mb-4">
+    <h2 class="section-title mb-3">Masa çağrıları</h2>
+    @if (Model.ServiceRequests.Count == 0)
+    {
+        <div class="empty-card">Bekleyen garson veya hesap çağrısı yok.</div>
+    }
+    <div class="row g-3">
+        @foreach (var request in Model.ServiceRequests)
+        {
+            <div class="col-12 col-md-6">
+                <article class="service-request-card">
+                    <div>
+                        <span class="eyebrow">MASA @request.TableNumber</span>
+                        <h2>@(request.Type == ServiceRequestType.RequestBill ? "Hesap istiyor" : "Garson çağırıyor")</h2>
+                        <small>@request.CreatedAt.ToString("HH:mm")</small>
+                    </div>
+                    <form asp-action="ResolveRequest" method="post">
+                        <input type="hidden" name="id" value="@request.Id" />
+                        <button class="btn btn-dark" type="submit">Tamamlandı</button>
+                    </form>
+                </article>
+            </div>
+        }
+    </div>
+</section>
+
 <section class="mb-4">
     <h2 class="section-title mb-3">Servise hazır</h2>
     @if (Model.ReadyOrders.Count == 0)
@@ -37,6 +72,14 @@
                         @foreach (var item in order.Items)
                         {
                             <div><strong>@item.Quantity x</strong><span>@item.ProductName</span></div>
+                            @if (!string.IsNullOrWhiteSpace(item.ExtrasSummary))
+                            {
+                                <small class="ticket-note">+ @item.ExtrasSummary</small>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.Note))
+                            {
+                                <small class="ticket-note">Not: @item.Note</small>
+                            }
                         }
                     </div>
                     <form asp-action="Deliver" method="post">

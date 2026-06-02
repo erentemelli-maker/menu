@@ -1,0 +1,55 @@
+@model AdminBranchesViewModel
+@{
+    ViewData["Title"] = "Şube Yönetimi";
+}
+
+<div class="admin-heading mb-4">
+    <span class="eyebrow">İŞLETME PANELİ</span>
+    <h1>Şube yönetimi</h1>
+    <p>Restoran noktalarınızı yönetin. Ürünler, masalar, siparişler ve personeller seçili şubeye göre ayrılır.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="panel-card">
+            <h2 class="h5">@(Model.Branch.Id.HasValue ? "Şubeyi Düzenle" : "Yeni Şube")</h2>
+            <form asp-action="Save" method="post">
+                <input asp-for="Branch.Id" type="hidden" />
+                <div class="mb-3">
+                    <label asp-for="Branch.Name" class="form-label">Şube adı</label>
+                    <input asp-for="Branch.Name" class="form-control" required />
+                </div>
+                <div class="form-check mb-3">
+                    <input asp-for="Branch.IsActive" class="form-check-input" />
+                    <label asp-for="Branch.IsActive" class="form-check-label">Aktif şube</label>
+                </div>
+                <button class="btn btn-dark w-100" type="submit">Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="panel-card">
+            @foreach (var branch in Model.Branches)
+            {
+                <div class="catalog-line">
+                    <div>
+                        <strong>@branch.Name</strong>
+                        <span class="badge @(branch.IsActive ? "text-bg-success" : "text-bg-secondary") ms-2">
+                            @(branch.IsActive ? "Aktif" : "Pasif")
+                        </span>
+                    </div>
+                    <a class="btn btn-sm btn-outline-dark" asp-action="Index" asp-route-editId="@branch.Id">Düzenle</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -51,3 +51,36 @@ Siparis merkezi SignalR ile canli guncellenir.
 - `Mutfak`: aktif siparis kuyrugu, sure sayaci ve tek dokunusla durum ilerletme
 - `Garson`: hazir siparisler, teslim aksiyonu ve anlik masa durum panosu
 - Masa durumlari: `Bos`, `Dolu`, `Servis Bekliyor`
+
+## Personel Yonetimi
+
+- Personel hesaplari SQL Server uzerinde saklanir.
+- Parolalar PBKDF2 tabanli ozet olarak kaydedilir; duz metin parola tutulmaz.
+- Roller: `Yonetici`, `Garson`, `Mutfak`
+- Pasif hesaplar sisteme giris yapamaz.
+- Son aktif yonetici pasife alinamaz veya rolu degistirilemez.
+
+## Coklu Sube
+
+- Mevcut veriler otomatik olarak `Merkez Sube` altinda korunur.
+- Urunler, masalar, siparisler ve personeller subeye gore ayrilir.
+- Yonetici ust menudeki seciciden aktif subeyi degistirebilir.
+- QR menu adresleri `branchId` tasir; ayni masa numarasi farkli subelerde kullanilabilir.
+- Secili veya son aktif sube yanlislikla pasife alinamaz.
+
+## Masa Hesabi ve Odeme
+
+- Teslim edilen siparisler masa hesabinda odeme bekler.
+- Garson panelinden nakit veya kart odemesi alinabilir.
+- Odeme kaydi SQL Server uzerinde saklanir.
+- Tahsilat tamamlandiginda masa otomatik olarak `Bos` durumuna gecer.
+- Satis raporlari teslim edilen degil, tahsil edilen siparisleri kullanir.
+- Hesap tek seferde, serbest tutarla veya urun satirlari secilerek tahsil edilebilir.
+- Ayni hesapta nakit ve kart odemeleri birlikte kullanilabilir.
+
+## Rol Ayrimi
+
+- `Yonetici`: panel, siparis merkezi, kasa, raporlar ve yonetim ekranlari
+- `Garson`: yalnizca servise hazir siparisler ve salon durumu
+- `Mutfak`: yalnizca mutfak siparis kuyrugu ve hazirlama aksiyonlari
+- Odeme alma ve masa kapatma islemleri sadece yonetici kasasinda bulunur.

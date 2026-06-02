@@ -1,3 +1,5 @@
+@inject DijitalMenu.Application.IBranchService BranchService
+@inject DijitalMenu.Application.IBranchContext BranchContext
 @{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var isAdmin = controller.StartsWith("Admin", StringComparison.OrdinalIgnoreCase) ||
@@ -18,7 +20,7 @@
     {
         <header class="app-header">
             <div class="container app-header-inner">
-                <a class="brand" asp-controller="AdminOrders" asp-action="Index">
+                <a class="brand" asp-controller="Account" asp-action="Login">
                     <span class="brand-mark">M</span>
                     <span><strong>Minoa</strong><small>Restaurant OS</small></span>
                 </a>
@@ -29,26 +31,44 @@
                 <nav class="collapse app-nav" id="adminNav">
                     @if (User.IsInRole("Admin"))
                     {
+                        <form class="branch-switcher" asp-controller="AdminBranches" asp-action="Select" method="post">
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                            <select class="form-select" name="branchId" onchange="this.form.submit()" aria-label="Aktif şube">
+                                @foreach (var branch in BranchService.GetBranches().Where(branch => branch.IsActive))
+                                {
+                                    <option value="@branch.Id" selected="@(branch.Id == BranchContext.BranchId)">@branch.Name</option>
+                                }
+                            </select>
+                        </form>
                         <a class="@(controller == "AdminDashboard" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Index">Panel</a>
                     }
-                    <a class="@(controller == "AdminOrders" ? "active" : "")" asp-controller="AdminOrders" asp-action="Index">Siparişler</a>
-                    @if (User.IsInRole("Admin") || User.IsInRole("Mutfak"))
+                    @if (User.IsInRole("Admin"))
                     {
-                        <a class="@(controller == "Kitchen" ? "active" : "")" asp-controller="Kitchen" asp-action="Index">Mutfak</a>
+                        <a class="@(controller == "AdminOrders" ? "active" : "")" asp-controller="AdminOrders" asp-action="Index">Siparişler</a>
+                        <a class="@(controller == "AdminCashier" ? "active" : "")" asp-controller="AdminCashier" asp-action="Index">Kasa</a>
                     }
-                    @if (User.IsInRole("Admin") || User.IsInRole("Garson"))
+                    @if (User.IsInRole("Mutfak"))
                     {
-                        <a class="@(controller == "Waiter" ? "active" : "")" asp-controller="Waiter" asp-action="Index">Garson</a>
+                        <a class="@(controller == "Kitchen" ? "active" : "")" asp-controller="Kitchen" asp-action="Index">Mutfak Siparişleri</a>
+                    }
+                    @if (User.IsInRole("Garson"))
+                    {
+                        <a class="@(controller == "Waiter" ? "active" : "")" asp-controller="Waiter" asp-action="Index">Servis Siparişleri</a>
                     }
                     @if (User.IsInRole("Admin"))
                     {
                         <a class="@(controller == "AdminReports" ? "active" : "")" asp-controller="AdminReports" asp-action="Index">Raporlar</a>
                         <a class="@(controller == "AdminOrderHistory" ? "active" : "")" asp-controller="AdminOrderHistory" asp-action="Index">Geçmiş</a>
+                        <a class="@(controller == "AdminStaff" ? "active" : "")" asp-controller="AdminStaff" asp-action="Index">Personel</a>
+                        <a class="@(controller == "AdminBranches" ? "active" : "")" asp-controller="AdminBranches" asp-action="Index">Şubeler</a>
                         <a class="@(controller == "AdminCatalog" ? "active" : "")" asp-controller="AdminCatalog" asp-action="Index">Katalog</a>
                         <a class="@(controller == "AdminTables" ? "active" : "")" asp-controller="AdminTables" asp-action="Index">Masalar</a>
                         <a class="@(controller == "AdminQr" ? "active" : "")" asp-controller="AdminQr" asp-action="Index">QR Kodlar</a>
                     }
-                    <a class="nav-preview" asp-controller="Menu" asp-action="Index" asp-route-tableNumber="5">Menüyü Gör</a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="nav-preview" asp-controller="Menu" asp-action="Index" asp-route-branchId="@BranchContext.BranchId" asp-route-tableNumber="5">Menüyü Gör</a>
+                    }
                     <form asp-controller="Account" asp-action="Logout" method="post">
                         <button class="nav-logout" type="submit">Çıkış</button>
                     </form>
